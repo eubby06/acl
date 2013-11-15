@@ -2,7 +2,7 @@
 
 use Illuminate\Database\Eloquent\Model;
 
-class Permission extends Model
+class PermissionModel extends Model
 {
 	protected $table = 'permissions';
 }

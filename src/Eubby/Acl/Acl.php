@@ -1,24 +1,32 @@
 <?php namespace Eubby\Acl;
 
-use Eubby\Acl\User;
-use Eubby\Acl\Role;
-use Eubby\Acl\Permission;
+use Eubby\Acl\UserModel;
+use Eubby\Acl\RoleModel;
+use Eubby\Acl\PermissionModel;
+use Eubby\Acl\SessionHelper;
+use Eubby\Acl\CookieHelper;
 
 class Acl
 {
 	protected $userModel;
 	protected $permissionModel;
 	protected $roleModel;
+	protected $sessionHelper;
+	protected $cookieHelper;
 
 	public function __construct(
-		User $userModel = null, 
-		Role $roleModel = null, 
-		Permission $permissionModel = null
+		UserModel $userModel = null, 
+		RoleModel $roleModel = null, 
+		PermissionModel $permissionModel = null,
+		SessionHelper $session = null,
+		CookieHelper $cookie = null
 		)
 	{
-		$this->userModel = $userModel ?: new User;
-		$this->roleModel = $roleModel ?: new Role;
-		$this->permissionModel = $permissionModel ?: new Permission;
+		$this->userModel = $userModel ?: new UserModel;
+		$this->roleModel = $roleModel ?: new RoleModel;
+		$this->permissionModel = $permissionModel ?: new PermissionModel;
+		$this->sessionHelper = $session;
+		$this->cookieHelper = $cookie;
 	}
 
 	public function createUser(array $credentials)
@@ -32,7 +40,7 @@ class Acl
 
 		if ($activate)
 		{
-			$user->activate();
+			$user->activate($user->getActivateCode());
 		}
 
 		return $this->user = $user;
@@ -98,13 +106,13 @@ class Acl
 		return true;
 	}
 
-	public function login(User $user, $remember = false)
+	public function login(UserModel $user, $remember = false)
 	{
 		//check if user is activated
 
 		$this->userModel = $user;
 
-		$toPersist = array($user->id, $user->getPersistCode());
+		$toPersist = array($user->id, $this->userModel->getPersistCode());
 
 		//todo: create a session class
 		//$this->session->put($toPersist);

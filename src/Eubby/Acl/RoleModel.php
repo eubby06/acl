@@ -2,7 +2,7 @@
 
 use Illuminate\Database\Eloquent\Model;
 
-class Role extends Model
+class RoleModel extends Model
 {
 	protected $table = 'roles';
 }

@@ -3,7 +3,7 @@
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Hashing\BcryptHasher;
 
-class User extends Model
+class UserModel extends Model
 {
 	protected $table = 'users';
 
@@ -12,9 +12,36 @@ class User extends Model
 		'persist_code'
 		);
 
+	protected $guarded = array(
+		'reset_password_code',
+		'activation_code',
+		'persist_code'
+		);
+
 	protected static $loginAttribute = 'email';
 
 	protected static $hasher;
+
+	public function activate($code)
+	{
+		if (! $this->activated)
+		{
+			if ($code == $this->activation_code)
+			{
+				$this->activation_code = null;
+				$this->activated = true;
+				$this->activated_at = new DateTime;
+				return $this->save();
+			}
+		}
+
+		return false;
+	}
+
+	public function getActivationCode()
+	{
+		return $this->activation_code;
+	}
 
 	public function getLoginName()
 	{
@@ -32,6 +59,16 @@ class User extends Model
 		{
 			$value = static::$hasher->make($value);
 		}
+	}
+
+	public static function setLoginAttributeName($loginAttribute)
+	{
+		static::$loginAttribute = $loginAttribute;
+	}
+
+	public static function getLoginAttributeName()
+	{
+		return static::$loginAttribute;
 	}
 
 	public static function setHasher(BcryptHasher $hasher = null)
