@@ -30,9 +30,60 @@ class AclTest extends \PHPUnit_Framework_TestCase
 
 	public function testLogsInUser()
 	{
-		$this->userModel->shouldReceive('getPersistCode')->once()->andReturn('persist_code');
-		$this->sessionHelper->shouldReceive('put')->with(array('foo', 'persist_code'))->once();
+		$this->userModel->shouldReceive('getPersistCode')->once()->andReturn('randomstring');
+		$this->userModel->shouldReceive('getId')->once()->andReturn(3);
 
-		$this->acl->login($this->userModel);
+		$this->sessionHelper->shouldReceive('put')->with(array('3','randomstring'))->once();
+
+		$this->cookieHelper->shouldReceive('forever')->with(array('3','randomstring'))->once();
+
+		$this->acl->login($this->userModel, true);
+	}
+
+	public function testLogout()
+	{
+		$this->sessionHelper->shouldReceive('get')->once();
+		$this->sessionHelper->shouldReceive('forget')->once();
+		$this->cookieHelper->shouldReceive('get')->once();
+		$this->cookieHelper->shouldReceive('forget')->once();
+
+		$this->acl->logout();
+
+		$this->assertNull($this->acl->getUser());
+	}
+
+	public function testAuthenticate()
+	{
+		$this->acl = m::mock('Eubby\Acl\Acl[login]');
+		$this->acl->__construct(
+			$this->userModel,
+			$this->roleModel,
+			$this->permissionModel,
+			$this->sessionHelper,
+			$this->cookieHelper
+			);
+
+		$credentials = array('username' => 'yonanne', 'password' => 'admin');
+
+		$this->userModel->shouldReceive('findByCredentials')->with($credentials)->once()->andReturn($user = m::mock('Eubby\Acl\UserModel'));
+
+		$this->userModel->shouldReceive('getLoginName')->once()->andReturn('username');
+
+		$this->acl->shouldReceive('login')->with($user, false)->once();
+
+		$user = $this->acl->authenticate($credentials, false);
+
+		$this->assertInstanceOf('Eubby\Acl\UserModel', $user);
+
+	}
+
+	public function testCheck()
+	{
+		$this->userModel->shouldReceive('find')->with(3)->once()->andReturn($user = m::mock('Eubby\Acl\UserModel[checkPersistCode]'));
+		$this->sessionHelper->shouldReceive('get')->once()->andReturn(array('3','randomstring'));
+		
+		$user->shouldReceive('checkPersistCode')->with('randomstring')->once()->andReturn(true);
+
+		$this->acl->check();
 	}
 }

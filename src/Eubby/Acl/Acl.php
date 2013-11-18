@@ -14,6 +14,8 @@ class Acl
 	protected $sessionHelper;
 	protected $cookieHelper;
 
+	protected $privilegedUser = null;
+
 	public function __construct(
 		UserModel $userModel = null, 
 		RoleModel $roleModel = null, 
@@ -31,19 +33,19 @@ class Acl
 
 	public function createUser(array $credentials)
 	{
-		return $this->userModel->create($credentials);
+		return $this->privilegedUser = $this->userModel->create($credentials);
 	}
 
 	public function register(array $credentials, $activate = false)
 	{
-		$user = $this->userModel->create($credentials);
+		$this->userModel->create($credentials);
 
 		if ($activate)
 		{
-			$user->activate($user->getActivateCode());
+			$this->privilegedUser->activate($this->privilegedUser->getActivateCode());
 		}
 
-		return $this->user = $user;
+		return $this->privilegedUser;
 	}
 
 	public function authenticate(array $credentials, $remember = false)
@@ -65,21 +67,21 @@ class Acl
 		//todo: check if user is ban
 
 		//find user by credentials
-		$user = $this->userModel->findByCredentials($credentials);
+		$this->privilegedUser = $this->userModel->findByCredentials($credentials);
 
-		if ($user)
+		if ($this->privilegedUser)
 		{
-			$this->login($user, $remember);
+			$this->login($this->privilegedUser, $remember);
 		}
 		
-		return $user;
+		return $this->privilegedUser;
 	}
 
 	public function check()
 	{
-		if (is_null($this->userModel))
+		if (is_null($this->privilegedUser))
 		{
-			if ( ! $userArray = $this->session->get() and ! $userArray = $this->cookie->get())
+			if ( ! $userArray = $this->sessionHelper->get() and ! $userArray = $this->cookieHelper->get())
 			{
 				return false;
 			}
@@ -91,16 +93,14 @@ class Acl
 
 			list($id, $persistCode) = $userArray;
 
-			$user = $this->userModel->find($id);
+			$this->privilegedUser = $this->userModel->find($id);
 
-			if (is_null($user)) return false;
+			if (is_null($this->privilegedUser)) return false;
 
-			if (! $user->checkPersistCode($persistCode))
+			if (! $this->privilegedUser->checkPersistCode($persistCode))
 			{
 				return false;
 			}
-
-			$this->userModel = $user;
 		}
 
 		return true;
@@ -110,36 +110,53 @@ class Acl
 	{
 		//check if user is activated
 
-		$this->userModel = $user;
+		$this->privilegedUser = $user;
 
-		$toPersist = array($user->id, $this->userModel->getPersistCode());
+		$toPersist = array($this->privilegedUser->getId(), $this->privilegedUser->getPersistCode());
 
-		//todo: create a session class
-		//$this->session->put($toPersist);
+		$this->sessionHelper->put($toPersist);
 
 		if ($remember)
 		{
-			//todo: create a cookie class
-			//$this->cookie->forever($toPersist);
+			$this->cookieHelper->forever($toPersist);
 		}
 	}
 
 	public function logout()
 	{
-		$this->userModel = null;
+		$this->privilegedUser = null;
 
-		//todo:
-		//$this->session->forget();
-		//$this->cookie->forget();
+		$this->sessionHelper->forget();
+		$this->cookieHelper->forget();
+	}
+
+	public function setUser(UserModel $user)
+	{
+		$this->privilegedUser = $user;
 	}
 
 	public function getUser()
 	{
-		if (is_null($this->userModel))
+		if (is_null($this->privilegedUser))
 		{
 			$this->check();
 		}
 
+		return $this->privilegedUser;
+	}
+
+	public function roleProvider()
+	{
+		return $this->roleModel;
+	}
+
+	public function permissionProvider()
+	{
+		return $this->permissionModel;
+	}
+
+	public function userProvider()
+	{
 		return $this->userModel;
 	}
 }

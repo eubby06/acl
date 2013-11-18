@@ -2,6 +2,8 @@
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Hashing\BcryptHasher;
+use Eubby\Acl\RoleModel;
+use Eubby\Acl\UserModel;
 
 class UserModel extends Model
 {
@@ -21,6 +23,18 @@ class UserModel extends Model
 	protected static $loginAttribute = 'email';
 
 	protected static $hasher;
+
+	protected $userRoles = null;
+
+	public function getId()
+	{
+		return $this->getKey();
+	}
+
+	public function getPassword()
+	{
+		return $this->password;
+	}
 
 	public function activate($code)
 	{
@@ -59,6 +73,8 @@ class UserModel extends Model
 		{
 			$value = static::$hasher->make($value);
 		}
+
+		return parent::setAttribute($key, $value);
 	}
 
 	public static function setLoginAttributeName($loginAttribute)
@@ -85,6 +101,14 @@ class UserModel extends Model
 		return $this->persist_code;
 	}
 
+	public function checkPersistCode($code)
+	{
+		if ($this->persist_code == $code) 
+			return true;
+		else
+			return false;
+	}
+
 	public function getRandomString($length = 42)
 	{
 		// We'll check if the user has OpenSSL installed with PHP. If they do
@@ -109,5 +133,55 @@ class UserModel extends Model
 		$pool = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
 		return substr(str_shuffle(str_repeat($pool, 5)), 0, $length);
+	}
+
+	public function roles()
+	{
+		return $this->belongsToMany('Eubby\Acl\RoleModel', 'role_user');
+	}
+
+	public function getRoles()
+	{
+		if (! $this->userRoles)
+		{
+			$this->userRoles = $this->roles()->get();
+		}
+
+		return $this->userRoles;
+	}
+
+	public function addRole(RoleModel $role)
+	{
+		if (! $this->hasRole($role))
+		{
+			$this->roles()->attach($role);
+			$this->userRoles = null;
+		}
+
+		return true;
+	}
+
+	public function removeRole(RoleModel $role)
+	{
+		if ($this->hasRole($role))
+		{
+			$this->roles()->detach($role);
+			$this->userRoles = null;
+		}
+
+		return true;
+	}
+
+	public function hasRole(RoleModel $role)
+	{
+		foreach($this->getRoles() as $_role)
+		{
+			if ($_role->getId() == $role->getId())
+			{
+				return true;
+			}
+		}
+
+		return false;
 	}
 }
