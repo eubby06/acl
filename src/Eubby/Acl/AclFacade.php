@@ -9,6 +9,6 @@ class Acl extends Facade {
 	 *
 	 * @return string
 	 */
-	protected static function getFacadeAccessor() { return 'Acl'; }
+	protected static function getFacadeAccessor() { return 'acl'; }
 
 }
