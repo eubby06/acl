@@ -2,14 +2,14 @@
 
 use Eubby\Acl\UserModel;
 use Eubby\Acl\RoleModel;
-use Eubby\Acl\PermissionModel;
+use Eubby\Acl\ThrottleModel;
 use Eubby\Acl\SessionHelper;
 use Eubby\Acl\CookieHelper;
 
 class Acl
 {
 	protected $userModel;
-	protected $permissionModel;
+	protected $throttleModel;
 	protected $roleModel;
 	protected $sessionHelper;
 	protected $cookieHelper;
@@ -19,14 +19,14 @@ class Acl
 	public function __construct(
 		UserModel $userModel = null, 
 		RoleModel $roleModel = null, 
-		PermissionModel $permissionModel = null,
+		ThrottleModel $throttleModel = null,
 		SessionHelper $session = null,
 		CookieHelper $cookie = null
 		)
 	{
 		$this->userModel = $userModel ?: new UserModel;
 		$this->roleModel = $roleModel ?: new RoleModel;
-		$this->permissionModel = $permissionModel ?: new PermissionModel;
+		$this->throttleModel = $throttleModel ?: new ThrottleModel;
 		$this->sessionHelper = $session;
 		$this->cookieHelper = $cookie;
 	}

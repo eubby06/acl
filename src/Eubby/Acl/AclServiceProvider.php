@@ -62,7 +62,7 @@ class AclServiceProvider extends ServiceProvider {
 			return new Acl(
 							$app['acl.user'], 
 							new RoleModel, 
-							new PermissionModel,
+							new ThrottleModel,
 							$app['acl.session'],
 							$app['acl.cookie']
 						);
