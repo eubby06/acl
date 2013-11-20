@@ -2,7 +2,7 @@
 
 use Illuminate\Support\Facades\Facade;
 
-class Acl extends Facade {
+class AclFacade extends Facade {
 
 	/**
 	 * Get the registered name of the component.
