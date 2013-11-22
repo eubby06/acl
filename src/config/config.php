@@ -25,7 +25,7 @@ return array(
 
 		'model' => 'Eubby\Acl\UserModel',
 
-		'login_attribute' => 'username',
+		'login_attribute' => 'email',
 
 	),
 
