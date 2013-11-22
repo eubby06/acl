@@ -38,7 +38,7 @@ class Acl
 
 	public function register(array $credentials, $activate = false)
 	{
-		$this->userModel->attemptSave($credentials);
+		$this->privilegedUser = $this->userModel->attemptSave($credentials);
 
 		if ($activate)
 		{
