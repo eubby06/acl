@@ -84,7 +84,7 @@ class AclServiceProvider extends ServiceProvider {
 	{
 		$this->app['acl.hasher'] = $this->app->share(function($app)
 		{
-			return new Illuminate\Hashing\BcryptHasher;
+			return new \Illuminate\Hashing\BcryptHasher;
 		});
 	}
 
