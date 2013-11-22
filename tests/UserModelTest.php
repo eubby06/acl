@@ -123,4 +123,47 @@ class UserModelTest extends \PHPUnit_Framework_TestCase
 
 		$this->assertTrue($user->removeRole($role));
 	}
+
+	/**
+	 *  @expectedException Eubby\Acl\LoginRequiredException
+	 */
+	public function testThrowsLoginExceptionIfNoneGive()
+	{
+		$user = new UserModel;
+		$user->validate();
+	}
+
+	/**
+	 *  @expectedException Eubby\Acl\PasswordRequiredException
+	 */
+	public function testThrowsPasswordExceptionIfNoneGive()
+	{
+		$user = new UserModel;
+		$user->email = 'foo@bar.com';
+		$user->validate();
+	}
+
+	/**
+	 *  @expectedException Eubby\Acl\UserExistsException
+	 */
+	public function testThrowsUserExistsExceptionIfNoneGive()
+	{
+		UserModel::setHasher($hasher = m::mock('Illuminate\Hashing\BcryptHasher'));
+		$hasher->shouldReceive('make')->with('bazbat')->once()->andReturn('hashed_bazbat');
+
+		$persistedUser = m::mock('Eubby\Acl\UserModel');
+		$persistedUser->shouldReceive('getId')->once()->andReturn(123);
+
+		$user = m::mock('Eubby\Acl\UserModel[newQuery]');
+		$user->email = 'foo@bar.com';
+		$user->password = 'bazbat';
+
+		$query = m::mock('StdClass');
+		$query->shouldReceive('where')->with('email', '=', 'foo@bar.com')->once()->andReturn($query);
+		$query->shouldReceive('first')->once()->andReturn($persistedUser);
+
+		$user->shouldReceive('newQuery')->once()->andReturn($query);
+
+		$user->validate();
+	}
 }

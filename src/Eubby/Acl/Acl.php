@@ -33,12 +33,12 @@ class Acl
 
 	public function createUser(array $credentials)
 	{
-		return $this->privilegedUser = $this->userModel->create($credentials);
+		return $this->privilegedUser = $this->userModel->attemptSave($credentials);
 	}
 
 	public function register(array $credentials, $activate = false)
 	{
-		$this->userModel->create($credentials);
+		$this->userModel->attemptSave($credentials);
 
 		if ($activate)
 		{

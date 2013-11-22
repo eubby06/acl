@@ -19,7 +19,8 @@
     },
     "autoload": {
         "classmap": [
-            "src/migrations"
+            "src/migrations",
+            "src/Eubby/Acl/Exceptions.php"
         ],
         "psr-0": {
             "Eubby\\Acl\\": "src/"

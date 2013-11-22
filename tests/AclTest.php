@@ -7,7 +7,7 @@ class AclTest extends \PHPUnit_Framework_TestCase
 {
 	protected $userModel;
 	protected $roleModel;
-	protected $permissionModel;
+	protected $throttleModel;
 	protected $sessionHelper;
 	protected $cookieHelper;
 	protected $acl;
@@ -17,7 +17,7 @@ class AclTest extends \PHPUnit_Framework_TestCase
 		$this->acl = new Acl(
 			$this->userModel 		= m::mock('Eubby\Acl\UserModel'),
 			$this->roleModel 		= m::mock('Eubby\Acl\RoleModel'),
-			$this->permissionModel 	= m::mock('Eubby\Acl\PermissionModel'),
+			$this->throttleModel 	= m::mock('Eubby\Acl\ThrottleModel'),
 			$this->sessionHelper 	= m::mock('Eubby\Acl\SessionHelper'),
 			$this->cookieHelper 	= m::mock('Eubby\Acl\CookieHelper')
 			);
@@ -58,7 +58,7 @@ class AclTest extends \PHPUnit_Framework_TestCase
 		$this->acl->__construct(
 			$this->userModel,
 			$this->roleModel,
-			$this->permissionModel,
+			$this->throttleModel,
 			$this->sessionHelper,
 			$this->cookieHelper
 			);

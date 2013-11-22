@@ -2,8 +2,10 @@
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Hashing\BcryptHasher;
+use Eubby\Acl\LoginRequiredException;
+use Eubby\Acl\PasswordRequiredException;
+use Eubby\Acl\UserExistsException;
 use Eubby\Acl\RoleModel;
-use Eubby\Acl\UserModel;
 
 class UserModel extends Model
 {
@@ -90,6 +92,11 @@ class UserModel extends Model
 	public static function setHasher(BcryptHasher $hasher = null)
 	{
 		static::$hasher = $hasher ?: new BcryptHasher;
+	}
+
+	public static function getHasher()
+	{
+		return static::$hasher;
 	}
 
 	public function getPersistCode()
@@ -183,5 +190,38 @@ class UserModel extends Model
 		}
 
 		return false;
+	}
+
+	public function validate()
+	{
+
+		if (! $login = $this->{static::$loginAttribute})
+		{
+			throw new LoginRequiredException('A login is required for a user.');
+		}
+
+		if (! $password = $this->getPassword())
+		{
+			throw new PasswordRequiredException('A password is required for user');
+		}
+
+		$query = $this->newQuery();
+
+		$persistedUser = $query->where($this->getLoginName(), '=', $login)->first();
+
+		if ($persistedUser and $persistedUser->getId() != $this->getId())
+		{
+			throw new UserExistsException('A user already exists with this login');
+		}
+
+		return true;
+	}
+
+	public function attemptSave(array $credentials, $options = array())
+	{
+		$this->fill($credentials);
+		$this->validate();
+
+		return $this->save($options);
 	}
 }
