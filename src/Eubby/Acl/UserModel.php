@@ -222,6 +222,8 @@ class UserModel extends Model
 		$this->fill($credentials);
 		$this->validate();
 
-		return $this->save($options);
+		$this->save($options);
+
+		return $this;
 	}
 }
