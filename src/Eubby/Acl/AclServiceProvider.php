@@ -40,6 +40,8 @@ class AclServiceProvider extends ServiceProvider {
 
 		$this->registerCookie();
 
+		$this->registerHasher();
+
 		$this->app['acl.user'] = $this->app->share(function($app)
 		{
 			$model = $app['config']['eubby/acl::users.model'];
@@ -52,6 +54,14 @@ class AclServiceProvider extends ServiceProvider {
 					array($model, 'setLoginAttributeName'),
 					array($loginAttribute)
 				);
+			}
+
+			if (method_exists($model, 'setHasher'))
+			{
+				forward_static_call_array(
+					array($model, 'setHasher'),
+					array($app['acl.hasher'])
+					);
 			}
 
 			return new $model;
@@ -68,6 +78,14 @@ class AclServiceProvider extends ServiceProvider {
 						);
 		});
 
+	}
+
+	protected function registerHasher()
+	{
+		$this->app['acl.hasher'] = $this->app->share(function($app)
+		{
+			return new Illuminate\Hashing\BcryptHasher;
+		});
 	}
 
 	protected function registerSession()
