@@ -6,7 +6,7 @@ use Eubby\Acl\LoginRequiredException;
 use Eubby\Acl\PasswordRequiredException;
 use Eubby\Acl\UserExistsException;
 use Eubby\Acl\RoleModel;
-use Validator;
+use Illuminate\Validation\Validator;
 
 class UserModel extends Model
 {
@@ -197,6 +197,11 @@ class UserModel extends Model
 		return false;
 	}
 
+	public function getErrors()
+	{
+		return $this->validation_errors;
+	}
+
 	public function validate($credentials)
 	{
 
@@ -210,15 +215,20 @@ class UserModel extends Model
 		$this->validation_errors = $validator->messages();
 
 		return false;
+
 	}
 
 	public function attemptSave(array $credentials, $options = array())
 	{
-		$this->fill($credentials);
-		$this->validate();
+		if ($this->validate($credentials))
+		{
+			unset($credentials['password_confirmation']);
 
-		$this->save($options);
+			$this->fill($credentials);
+			$this->save($options);	
+			return $this;	
+		}
 
-		return $this;
+		return false;
 	}
 }
