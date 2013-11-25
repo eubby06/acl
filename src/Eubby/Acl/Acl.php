@@ -159,4 +159,9 @@ class Acl
 	{
 		return $this->userModel;
 	}
+
+	public function getErrors()
+	{
+		return $this->userModel->getErrors();
+	}
 }
