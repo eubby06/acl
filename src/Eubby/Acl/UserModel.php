@@ -6,7 +6,7 @@ use Eubby\Acl\LoginRequiredException;
 use Eubby\Acl\PasswordRequiredException;
 use Eubby\Acl\UserExistsException;
 use Eubby\Acl\RoleModel;
-use Illuminate\Validation\Validator;
+use Validator;
 
 class UserModel extends Model
 {
@@ -28,6 +28,8 @@ class UserModel extends Model
 		'password' 			=> 'required');
 
 	protected static $loginAttribute = 'email';
+
+	protected $validator = null;
 
 	protected static $hasher;
 
@@ -202,10 +204,21 @@ class UserModel extends Model
 		return $this->validation_errors;
 	}
 
+	public function setValidator($validator = null)
+	{
+		$this->validator = $validator;
+	}
+
 	public function validate($credentials)
 	{
-
-		$validator = Validator::make($credentials, $this->validation_rules);
+		if (!is_null($this->validator))
+		{
+			$validator = $this->validator->make($credentials, $this->validation_rules);
+		}
+		else
+		{
+			$validator = Validator::make($credentials, $this->validation_rules);
+		}
 
 		if ($validator->passes())
 		{

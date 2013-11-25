@@ -123,4 +123,19 @@ class UserModelTest extends \PHPUnit_Framework_TestCase
 
 		$this->assertTrue($user->removeRole($role));
 	}
+
+	public function testValidateData()
+	{
+		$validator = m::mock('Illuminate\Support\Contracts\MessageProviderInterface[make,passes]');
+		$validator->shouldReceive('make')->once()->andReturn($validator);
+		$validator->shouldReceive('messages')->once()->andReturn('messages');
+		$validator->shouldReceive('passes')->once()->andReturn(false);
+
+		$user = new UserModel;
+		$user->setValidator($validator);
+
+		$credentials = array('email', 'foo@bar.com');
+
+		$this->assertFalse($user->validate($credentials));
+	}
 }
