@@ -6,6 +6,7 @@ use Eubby\Acl\LoginRequiredException;
 use Eubby\Acl\PasswordRequiredException;
 use Eubby\Acl\UserExistsException;
 use Eubby\Acl\RoleModel;
+use Validator;
 
 class UserModel extends Model
 {
@@ -21,6 +22,10 @@ class UserModel extends Model
 		'activation_code',
 		'persist_code'
 		);
+
+	protected $validation_rules = array(
+		'email' 			=> 'required|email|unique:social_users', 
+		'password' 			=> 'required');
 
 	protected static $loginAttribute = 'email';
 
@@ -192,29 +197,19 @@ class UserModel extends Model
 		return false;
 	}
 
-	public function validate()
+	public function validate($credentials)
 	{
 
-		if (! $login = $this->{static::$loginAttribute})
+		$validator = Validator::make($credentials, $this->validation_rules);
+
+		if ($validator->passes())
 		{
-			throw new LoginRequiredException('A login is required for a user.');
+			return true;
 		}
 
-		if (! $password = $this->getPassword())
-		{
-			throw new PasswordRequiredException('A password is required for user');
-		}
+		$this->validation_errors = $validator->messages();
 
-		$query = $this->newQuery();
-
-		$persistedUser = $query->where($this->getLoginName(), '=', $login)->first();
-
-		if ($persistedUser and $persistedUser->getId() != $this->getId())
-		{
-			throw new UserExistsException('A user already exists with this login');
-		}
-
-		return true;
+		return false;
 	}
 
 	public function attemptSave(array $credentials, $options = array())

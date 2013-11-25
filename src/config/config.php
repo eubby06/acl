@@ -23,7 +23,7 @@ return array(
 
 	'users' => array(
 
-		'model' => 'Eubby\Acl\UserModel',
+		'model' => 'Eubby\Acl\UserModel', //set your user model, this can be extended
 
 		'login_attribute' => 'email',
 
