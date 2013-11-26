@@ -45,6 +45,17 @@ class UserModel extends Model
 		return $this->password;
 	}
 
+	public function findByCredentials(array $credentials)
+	{
+		$loginName = $this->getLoginName();
+
+		$user = $this->userModel->where($loginName, '=', $credentials[$loginName])
+						->where('password', '=', $credentials['password'])
+						->first();
+
+		return $user;
+	}
+
 	public function activate($code)
 	{
 		if (! $this->activated)
