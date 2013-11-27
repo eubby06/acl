@@ -49,11 +49,14 @@ class UserModel extends Model
 	{
 		$loginName = $this->getLoginName();
 
-		$user = $this->userModel->where($loginName, '=', $credentials[$loginName])
-						->where('password', '=', $credentials['password'])
-						->first();
+		$user = $this->where($loginName, '=', $credentials[$loginName])->first();
 
-		return $user;
+		if (static::$hasher->check($credentials['password'], $user->getPassword()))
+		{
+			return $user;	
+		}
+
+		return null;
 	}
 
 	public function activate($code)
@@ -64,7 +67,7 @@ class UserModel extends Model
 			{
 				$this->activation_code = null;
 				$this->activated = true;
-				$this->activated_at = new DateTime;
+				$this->activated_at = new \DateTime;
 				return $this->save();
 			}
 		}
@@ -253,7 +256,7 @@ class UserModel extends Model
 
 			$this->fill($credentials);
 			$this->save($options);	
-			
+
 			return $this;	
 		}
 

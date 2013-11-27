@@ -40,9 +40,9 @@ class Acl
 	{
 		$this->privilegedUser = $this->userModel->attemptSave($credentials);
 
-		if ($activate)
+		if ($this->privilegedUser && $activate)
 		{
-			$this->privilegedUser->activate($this->privilegedUser->getActivateCode());
+			$this->privilegedUser->activate($this->privilegedUser->getActivationCode());
 		}
 
 		return $this->privilegedUser;
