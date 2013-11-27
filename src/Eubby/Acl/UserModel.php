@@ -74,7 +74,10 @@ class UserModel extends Model
 
 	public function getActivationCode()
 	{
-		return $this->activation_code;
+		$this->activation_code = $activationCode = $this->getRandomString();
+		$this->save();
+
+		return $activationCode;
 	}
 
 	public function getLoginName()
@@ -250,6 +253,7 @@ class UserModel extends Model
 
 			$this->fill($credentials);
 			$this->save($options);	
+			
 			return $this;	
 		}
 
